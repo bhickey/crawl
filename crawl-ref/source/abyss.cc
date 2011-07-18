@@ -1125,6 +1125,18 @@ static int _abyss_place_vaults(const map_mask &abyss_genlevel_mask)
     return (vaults_placed);
 }
 
+static void _thin_abyss()
+{
+    const int scalar = 0xFF;
+    for (radius_iterator ri(ABYSS_CENTRE, 4, C_ROUND); ri; ++ri)
+    {
+        const int dist = distance(ABYSS_CENTRE, *ri);
+        int chance = pow(0.98, dist) * scalar;  
+            if (x_chance_in_y(chance, scalar)) 
+                grd(*ri) = DNGN_FLOOR;
+    }
+}
+
 static void _generate_area(const map_mask &abyss_genlevel_mask)
 {
     // Any rune on the floor prevents the abyssal rune from being generated.
@@ -1139,6 +1151,9 @@ static void _generate_area(const map_mask &abyss_genlevel_mask)
     // Nuke map knowledge.
     env.map_knowledge.init(map_cell());
     _abyss_apply_terrain(abyss_genlevel_mask);
+    
+    if (you.char_direction == GDT_GAME_START)
+        _thin_abyss();
 
     bool use_vaults = (you.char_direction == GDT_GAME_START ? false : true);
 
