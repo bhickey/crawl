@@ -243,8 +243,11 @@ bool trap_def::is_safe(actor* act) const
     if (!is_known(act))
         return false;
 
-    if (type == TRAP_GOLUBRIA || crawl_state.game_is_zotdef())
+    if (type == TRAP_GOLUBRIA || type == TRAP_SHAFT
+        || crawl_state.game_is_zotdef())
+    {
         return true;
+    }
 
     #ifdef CLUA_BINDINGS
      // Prompt for any trap where you might not have enough hp
@@ -890,7 +893,10 @@ void trap_def::trigger(actor& triggerer, bool flat_footed)
         if (!you_trigger)
         {
             if (in_sight)
+            {
                 mpr("The shaft crumbles and collapses.");
+                know_trap_destroyed = true;
+            }
             trap_destroyed = true;
         }
         break;
