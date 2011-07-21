@@ -1637,21 +1637,6 @@ int player_res_electricity(bool calc_unid, bool temp, bool items)
 {
     int re = 0;
 
-    if (temp)
-    {
-        if (you.duration[DUR_INSULATION])
-            re++;
-
-        // transformations:
-        if (you.form == TRAN_STATUE)
-            re += 1;
-
-        if (you.attribute[ATTR_DIVINE_LIGHTNING_PROTECTION])
-            re = 3;
-        else if (re > 1)
-            re = 1;
-    }
-
     if (items)
     {
         // staff
@@ -1668,6 +1653,21 @@ int player_res_electricity(bool calc_unid, bool temp, bool items)
     // mutations:
     re += player_mutation_level(MUT_THIN_METALLIC_SCALES) == 3 ? 1 : 0;
     re += player_mutation_level(MUT_SHOCK_RESISTANCE);
+
+    if (temp)
+    {
+        if (you.duration[DUR_INSULATION])
+            re++;
+
+        // transformations:
+        if (you.form == TRAN_STATUE)
+            re += 1;
+
+        if (you.attribute[ATTR_DIVINE_LIGHTNING_PROTECTION])
+            re = 3;
+        else if (re > 1)
+            re = 1;
+    }
 
     return (re);
 }
@@ -6457,12 +6457,22 @@ void player::petrify(actor *who)
         return;
     }
 
-    if (you.petrified() || you.petrifying())
+    if (you.petrified())
         return;
 
     you.duration[DUR_PETRIFYING] = 3 * BASELINE_DELAY;
 
+    you.redraw_evasion = true;
     mprf(MSGCH_WARN, "You are slowing down.");
+}
+
+bool player::fully_petrify(actor *foe, bool quiet)
+{
+    you.duration[DUR_PETRIFIED] = 6 * BASELINE_DELAY
+                        + random2(4 * BASELINE_DELAY);
+    you.redraw_evasion = true;
+    mpr("You have turned to stone.");
+    return true;
 }
 
 void player::slow_down(actor *foe, int str)

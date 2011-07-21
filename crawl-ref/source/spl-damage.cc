@@ -536,6 +536,8 @@ void sonic_damage(bool scream)
             hurt = std::max(hurt * 2, 16);
         int cap = scream ? mi->max_hit_points / 2 : mi->max_hit_points * 3 / 10;
         hurt = std::min(hurt, std::max(cap, 1));
+        // not so much damage if you're a n00b
+        hurt = div_rand_round(hurt * you.experience_level, 27);
         /* per dpeg:
          * damage is universal (well, only to those who can hear, but not sure
            we can determine that in-game), i.e. smiting, no resists
@@ -810,11 +812,12 @@ static int _shatter_monsters(coord_def where, int pow, int, actor *)
 
     default:
         const bool petrifying = mon->petrifying();
-        const bool petrified = mon->petrified() && !petrifying;
+        const bool petrified = mon->petrified();
 
         // Extra damage to petrifying/petrified things.
+        // Undo the damage reduction as well; base damage is 4 : 6.
         if (petrifying || petrified)
-            dam_dice.num = petrifying ? 4 : 6;
+            dam_dice.num = petrifying ? 7 : 18;
         // No damage to insubstantials.
         else if (mon->is_insubstantial())
             dam_dice.num = 0;
@@ -1536,7 +1539,7 @@ bool cast_fragmentation(int pow, const dist& spd)
 
         default:
             const bool petrifying = mon->petrifying();
-            const bool petrified = mon->petrified() && !petrifying;
+            const bool petrified = mon->petrified();
 
             // Petrifying or petrified monsters can be exploded.
             if (petrifying || petrified)
